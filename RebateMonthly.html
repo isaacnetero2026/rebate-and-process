@@ -1,0 +1,277 @@
+<div id="rebateMonthlyPage">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px; border-bottom: 2px solid #0056b3; padding-bottom: 10px; background: white; padding: 15px; border-radius: 8px;">
+    <h3 style="margin:0; padding:0; line-height: 1; color: #0056b3;">Rebate Calculator (Monthly)</h3>
+    <div style="display:flex; gap:5px; align-items:center;">
+      <button onclick="openMainSystem()" style="background: #6c757d; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: bold; width: auto;">Back</button>
+      <button onclick="logout()" style="background-color: #dc3545; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: bold; width: auto;">Logout</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div style="background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; padding: 15px; border-radius: 4px; margin-bottom: 20px; font-size: 13px; line-height: 1.5;">
+      <strong>Note:</strong> Please ensure that all computations are carefully reviewed, as this calculator is currently in a test run and relies on the data provided. Should you encounter any errors, kindly contact your administrator and provide a screenshot for reference.
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+      <div class="input-group">
+        <label style="font-weight: bold; font-size: 12px;">Billing Cycle Category</label>
+        <select id="billingCycleMonthly" onchange="handleBillingCycleMonthlyChange()">
+          <option value="A">A - 1st of the month</option>
+          <option value="B">B - 8th of the month</option>
+          <option value="C">C - 15th of the month</option>
+          <option value="D">D - 22nd of the month</option>
+          <option value="E">E - Manual Entry</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <label style="font-weight: bold; font-size: 12px;">Cycle Start (Anchor)</label>
+        <input type="date" id="startBillingCycleMonthly" disabled>
+      </div>
+      <div class="input-group">
+        <label style="font-weight: bold; font-size: 12px;">Rebate Type</label>
+        <select id="rebateTypeMonthly">
+          <option value="1.0">No Connection (100%)</option>
+          <option value="0.3">Slow / Intermittent connection (30%)</option>
+        </select>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+      <div class="input-group">
+        <label style="font-weight: bold; font-size: 12px;">Reference (NTR/NAR/INC/SF)</label>
+        <input type="text" id="referenceNumber" placeholder="Enter Ref #">
+      </div>
+      <div class="input-group">
+        <label style="font-weight: bold; font-size: 12px;">RFO (Reason for Outage)</label>
+        <input type="text" id="rfoReason" placeholder="Reason">
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+      <div class="input-group">
+        <label style="font-weight: bold; font-size: 12px;">Account Number</label>
+        <input type="text" id="accountNumberMonthly" placeholder="9 digits or 13 alphanumeric">
+      </div>
+      <div class="input-group">
+        <label style="font-weight: bold; font-size: 12px;">Plan Amount</label>
+        <input type="number" id="planMonthly" placeholder="0.00">
+      </div>
+    </div>
+
+    <hr style="border:0; border-top: 1px solid #eee; margin: 15px 0;">
+
+    <div id="affectedContainerMonthly">
+      <div class="affectedFrame" style="display:flex; gap:10px; align-items:flex-end; margin-bottom:10px; padding: 10px; background: #f9f9f9; border-radius: 4px; border: 1px solid #ddd;">
+        <div style="flex:1;"><label style="font-size: 10px;">Start Date</label><input type="date" class="manualStart" onchange="updateRowDays(this)"></div>
+        <div style="flex:1;"><label style="font-size: 10px;">Restoration Date</label><input type="date" class="manualEnd" onchange="updateRowDays(this)"></div>
+        <div style="width:60px;"><label style="font-size: 10px;">Days</label><input type="text" class="totalDays" readonly style="background:#e9ecef; width: 100%; text-align: center;"></div>
+        <button type="button" onclick="removeFrameMonthly(this)" style="background:#dc3545; color:white; border:none; padding: 5px 12px; border-radius:4px; height: 35px; width: auto; font-size: 10px; font-weight: bold; cursor: pointer;">REMOVE</button>
+      </div>
+    </div>
+
+    <div style="display:flex; gap:10px; margin-top: 15px;">
+      <button onclick="addAffectedDaysMonthly()" class="nav-btn" style="width: auto;">+ Add Row</button>
+      <button onclick="calculateBillingMonthly()" class="search-btn" style="background: #28a745; width: auto;">Calculate & Save</button>
+      <button onclick="clearFormMonthly()" class="nav-btn" style="width: auto;">Clear</button>
+      <button onclick="copyOutputMonthly()" class="search-btn" style="background: #007bff; width: auto;">Copy Output</button>
+    </div>
+  </div>
+
+  <div id="billingOutputMonthly" style="margin-top: 20px; padding: 15px; background-color: #ffffff; border: 2px solid #333; white-space: pre-wrap; font-family: monospace; font-size: 13px; color: #000; min-height: 50px;"></div>
+
+  <div class="card" style="margin-top:20px; border-top: 3px solid #6f42c1;">
+    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #eee; padding-bottom:10px; margin-bottom:10px;">
+      <h4 style="margin:0; color:#6f42c1;">Recent Monthly Calculations</h4>
+      <button class="refresh-mini-btn" onclick="loadHistory()" style="color:#6f42c1; border-color:#6f42c1; padding: 5px 10px; font-size: 11px; cursor: pointer;">Refresh History</button>
+    </div>
+    <div id="historyListMonthly" style="max-height: 350px; overflow-y: auto; padding-right: 5px;">
+      <p style="font-size: 0.8em; color: #888; text-align: center;">History will appear here after your first calculation.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+const cycleConfigMonthly = {
+  A: { day: 1, label: "1ST" },
+  B: { day: 8, label: "8TH" },
+  C: { day: 15, label: "15TH" },
+  D: { day: 22, label: "22ND" },
+  E: { manual: true, label: "MANUAL" }
+};
+
+function formatDate(d) { return d ? `${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}/${d.getFullYear()}` : "N/A"; }
+function formatDateTxt(d) { const m = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"]; return d ? `${m[d.getMonth()]} ${String(d.getDate()).padStart(2, '0')}` : ""; }
+function localDate(s) { if (!s) return null; const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); }
+
+function handleBillingCycleMonthlyChange() {
+  const sel = document.getElementById("billingCycleMonthly").value;
+  document.getElementById("startBillingCycleMonthly").disabled = !cycleConfigMonthly[sel].manual;
+}
+
+function updateRowDays(el) {
+  const frame = el.closest(".affectedFrame");
+  const s = localDate(frame.querySelector(".manualStart").value);
+  const r = localDate(frame.querySelector(".manualEnd").value);
+  if (s && r) {
+    const diff = Math.floor((Date.UTC(r.getFullYear(), r.getMonth(), r.getDate()) - Date.UTC(s.getFullYear(), s.getMonth(), s.getDate())) / 86400000);
+    frame.querySelector(".totalDays").value = diff > 0 ? diff : 0;
+  }
+}
+
+function addAffectedDaysMonthly() {
+  const container = document.getElementById("affectedContainerMonthly");
+  const clone = container.firstElementChild.cloneNode(true);
+  clone.querySelectorAll("input").forEach(i => i.value = "");
+  container.appendChild(clone);
+}
+
+function removeFrameMonthly(btn) {
+  const container = document.getElementById("affectedContainerMonthly");
+  if (container.children.length > 1) btn.closest('.affectedFrame').remove();
+}
+
+function calculateBillingMonthly() {
+  const planVal = parseFloat(document.getElementById("planMonthly").value);
+  const accNum = document.getElementById("accountNumberMonthly").value.trim();
+  const cycleKey = document.getElementById("billingCycleMonthly").value;
+  const cfg = cycleConfigMonthly[cycleKey];
+  const typeFactor = parseFloat(document.getElementById("rebateTypeMonthly").value);
+  const refVal = document.getElementById("referenceNumber").value.trim();
+  const rfoVal = document.getElementById("rfoReason").value;
+  
+  // Bridge Global Variables
+  const activeUser = (typeof curN !== 'undefined') ? curN : "User";
+  const activeLevel = (typeof curL !== 'undefined') ? curL : "N/A";
+  const activeSuperior = (typeof curSup !== 'undefined') ? curSup : "N/A";
+  
+  if (!refVal || !accNum || !planVal) return alert("Please complete all required fields.");
+  
+  let totalReqDays = 0, grandTotal = 0, computationText = "", periods = [], ranges = [];
+  document.querySelectorAll(".affectedFrame").forEach(f => {
+    const s = f.querySelector(".manualStart").value;
+    const r = f.querySelector(".manualEnd").value;
+    if (s && r) ranges.push({ start: localDate(s), restore: localDate(r) });
+  });
+
+  if (!ranges.length) return alert("Enter start and restoration dates.");
+
+  ranges.forEach((rng) => {
+    let cur = new Date(rng.start);
+    const stop = new Date(rng.restore.getTime() - 86400000);
+    while (cur <= stop) {
+      let bs;
+      if (cfg.manual) {
+        bs = localDate(document.getElementById("startBillingCycleMonthly").value);
+        if(!bs) return alert("Please set the Manual Anchor Date.");
+        while (cur < bs) bs.setMonth(bs.getMonth() - 1);
+        while (new Date(bs.getFullYear(), bs.getMonth() + 1, bs.getDate()) <= cur) bs.setMonth(bs.getMonth() + 1);
+      } else {
+        bs = new Date(cur.getFullYear(), cur.getMonth(), cfg.day);
+        if (cur.getDate() < cfg.day) bs.setMonth(bs.getMonth() - 1);
+      }
+      let be = new Date(bs.getFullYear(), bs.getMonth() + 1, bs.getDate() - 1);
+      let aS = (cur < bs) ? bs : cur;
+      let aE = (stop <= be) ? stop : be;
+      let d = Math.floor((Date.UTC(aE.getFullYear(), aE.getMonth(), aE.getDate()) - Date.UTC(aS.getFullYear(), aS.getMonth(), aS.getDate())) / 86400000) + 1;
+      let pD = Math.floor((Date.UTC(be.getFullYear(), be.getMonth(), be.getDate()) - Date.UTC(bs.getFullYear(), bs.getMonth(), bs.getDate())) / 86400000) + 1;
+      let amt = (planVal / pD) * d * typeFactor;
+      periods.push(`${formatDateTxt(bs)} - ${formatDateTxt(be)}, ${be.getFullYear()}`);
+      computationText += `FORMULA: ${formatDateTxt(aS)} - ${formatDateTxt(aE)}, ${aE.getFullYear()}: (${planVal} / ${pD}) * ${d}${typeFactor === 0.3 ? " * 0.3" : ""} = ${amt.toFixed(4)}\n`;
+      grandTotal += amt; totalReqDays += d;
+      cur = new Date(be.getTime() + 86400000);
+    }
+  });
+
+  const finalOutput = `PREPARED BY: ${activeUser}\nACCOUNT NUMBER: ${accNum}\nREFERENCE: ${refVal}\nISSUE START DATE: ${ranges.map(r => formatDate(r.start)).join(" / ")}\nISSUE END DATE: ${ranges.map(r => formatDate(new Date(r.restore.getTime() - 86400000))).join(" / ")}\nRESTORATION DATE: ${ranges.map(r => formatDate(r.restore)).join(" / ")}\nBILLING CYCLE: ${cycleKey} - ${cfg.label}\nCRM: IBAS\nPLAN: ${planVal.toFixed(2)}\nTOTAL REQUESTED DAYS: ${totalReqDays}\n\nBREAKDOWN:\nPERIOD: ${[...new Set(periods)].join(", ")}\n${computationText}\nESTIMATED REBATE AMOUNT: ${grandTotal.toFixed(2)}\nRFO (Reason): ${rfoVal}`;
+
+  document.getElementById("billingOutputMonthly").innerText = finalOutput;
+  
+  // Fixed: Sending curN (Full Name) instead of activeUsername to the spreadsheet
+  google.script.run.withSuccessHandler(() => {
+    loadHistory();
+    if(typeof refreshChoiceHistory === 'function') refreshChoiceHistory();
+  }).recordCalculation(finalOutput, curN, curL, curSup);
+}
+
+function clearFormMonthly() {
+  if(confirm("Clear form?")) {
+    document.querySelectorAll("#rebateMonthlyPage input").forEach(i => i.value = "");
+    document.getElementById("billingOutputMonthly").innerText = "";
+    const container = document.getElementById("affectedContainerMonthly");
+    while (container.children.length > 1) container.removeChild(container.lastChild);
+  }
+}
+
+function copyOutputMonthly() {
+  const content = document.getElementById("billingOutputMonthly").innerText;
+  if (content) { navigator.clipboard.writeText(content).then(() => alert("Copied to clipboard.")); }
+}
+
+// --- HISTORY LOGIC ---
+function loadHistory() {
+  const container = document.getElementById("historyListMonthly");
+  
+  // Wait for global user variables to be ready
+  if (typeof curN === 'undefined' || typeof curL === 'undefined') {
+    setTimeout(loadHistory, 300);
+    return;
+  }
+
+  container.innerHTML = "<p style='font-size:0.8em; text-align:center; color:#666; opacity:0.6;'>Fetching monthly records...</p>";
+  
+  // Pass curN (Name), curR (Role), and curSup (Superior) to match backend logic
+  google.script.run.withSuccessHandler(history => {
+    if (!history || history.length === 0) {
+      container.innerHTML = "<p style='font-size:0.8em; color:#888; text-align:center; padding: 20px;'>No history found.</p>";
+      return;
+    }
+    
+    let html = "";
+    history.forEach((item, index) => {
+      // The backend now provides the correct "item.header" without the "ount" error
+      html += `
+        <div class="history-item" style="border: 1px solid rgba(0,0,0,0.1); margin-bottom: 8px; border-radius: 4px; background: #fff; border-left: 4px solid #6f42c1; overflow: hidden; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+          <div onclick="toggleMonthlyRecord(this)" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center; background: #fdfdfe; padding: 10px 12px; font-family:'Courier New', monospace; font-size: 11px;">
+            <span style="font-weight:bold; color:#444; flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; padding-right:10px;">
+              ${item.header}
+            </span>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span style="font-size:9px; color:#999; white-space:nowrap;">${item.date}</span>
+              <span class="toggle-status" style="font-size:9px; color:#6f42c1; font-weight:bold; border:1px solid #6f42c1; padding:0px 4px; border-radius:3px;">VIEW</span>
+            </div>
+          </div>
+          <div class="monthly-body" style="display:none; padding:10px; border-top: 1px solid #eee;">
+            <pre class="history-text" style="font-family: monospace; font-size: 11px; white-space: pre-wrap; background: #fcfcfc; padding: 10px; border: 1px solid #eee; margin-bottom: 8px; color: #333;">${item.text}</pre>
+            <div style="text-align: right;">
+              <button onclick="copySpecificHistory(this)" style="width:100%; font-size:10px; padding: 8px; background: #6f42c1; color: white; border:none; border-radius:3px; cursor:pointer; font-weight:bold;">COPY MONTHLY RESULT</button>
+            </div>
+          </div>
+        </div>`;
+    });
+    container.innerHTML = html;
+  }).getChoiceHistory(curN, curR, curSup); // UPDATED: Now uses unified history with superior check
+}
+
+function toggleMonthlyRecord(header) {
+  const body = header.nextElementSibling;
+  const status = header.querySelector(".toggle-status");
+  const isHidden = body.style.display === "none";
+  body.style.display = isHidden ? "block" : "none";
+  status.innerText = isHidden ? "CLOSE" : "VIEW";
+  // Visual feedback: change header background when open
+  header.style.background = isHidden ? "#f8f9fa" : "#fdfdfe";
+}
+
+function copySpecificHistory(btn) {
+  const text = btn.parentElement.previousElementSibling.innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    const originalText = btn.innerText;
+    btn.innerText = "COPIED!";
+    btn.style.background = "#28a745";
+    setTimeout(() => { btn.innerText = originalText; btn.style.background = "#6f42c1"; }, 1500);
+  });
+}
+
+// Initialize history on load
+setTimeout(loadHistory, 1000);
+</script>

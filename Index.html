@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Process Hub</title>
+  <style>
+    *{box-sizing:border-box}body{margin:0;font-family:Arial,Segoe UI,sans-serif;background:#f3f6fb;color:#172033}
+    button,input,select{font:inherit}.login{min-height:100vh;display:grid;place-items:center;background:linear-gradient(135deg,#0f172a,#2563eb);padding:20px}
+    .login-card{width:min(420px,100%);background:#fff;padding:32px;border-radius:18px;box-shadow:0 20px 60px #0005}
+    .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:18px}.logo{width:42px;height:42px;background:#2563eb;color:#fff;border-radius:11px;display:grid;place-items:center}
+    .login-card h1{margin:28px 0 6px}.muted{color:#64748b;font-size:13px}.field{display:block;font-weight:700;font-size:13px;margin:16px 0}.field input,.field select{display:block;width:100%;margin-top:6px;padding:11px;border:1px solid #cbd5e1;border-radius:8px}
+    .btn{border:0;border-radius:8px;padding:10px 15px;background:#2563eb;color:#fff;cursor:pointer;font-weight:700}.btn.gray{background:#e2e8f0;color:#172033}.btn.red{background:#dc2626}.login .btn{width:100%;margin-top:8px}.error{color:#dc2626;min-height:20px;font-size:13px;margin-top:10px}
+    .app{display:flex;min-height:100vh}.side{width:250px;background:#111827;color:#fff;position:fixed;inset:0 auto 0 0;padding:20px 14px;z-index:5}.brand small{display:block;color:#94a3b8;font-size:11px;font-weight:400}
+    .nav{margin-top:28px}.nav button{display:block;width:100%;text-align:left;border:0;background:transparent;color:#cbd5e1;padding:12px;border-radius:8px;margin:4px 0;cursor:pointer}.nav button:hover,.nav button.active{background:#1d4ed8;color:#fff}
+    .main{margin-left:250px;width:calc(100% - 250px)}header{height:78px;background:#fff;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;padding:0 28px;gap:15px}header h1{margin:0;font-size:21px}header p{margin:4px 0;color:#64748b;font-size:12px}.right{margin-left:auto;display:flex;align-items:center;gap:10px}.role{padding:4px 8px;border-radius:99px;font-size:10px;font-weight:800}.admin{background:#fee2e2;color:#b91c1c}.semi{background:#fef3c7;color:#92400e}.user{background:#dbeafe;color:#1d4ed8}
+    .content{padding:28px;max-width:1450px;margin:auto}.page{display:none}.page.on{display:block}.hero{padding:30px;border-radius:17px;color:#fff;background:linear-gradient(135deg,#1d4ed8,#2563eb);display:flex;justify-content:space-between}.hero h2{font-size:30px;margin:8px 0}.hero p{color:#dbeafe}.hero-icon{font-size:70px;opacity:.25;margin-right:10%}
+    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}.card,.pagebox{background:#fff;border:1px solid #e2e8f0;border-radius:13px;padding:19px}.card{text-align:left;cursor:pointer}.card:hover{border-color:#93c5fd}.card h3{margin:8px 0}.card p,.card small{color:#64748b;font-size:13px;line-height:1.5}.icon{font-size:24px;color:#2563eb}
+    .section{display:flex;align-items:end;justify-content:space-between;margin:25px 0 12px}.section h2,.section h3{margin:0}.search{display:flex;border:1px solid #cbd5e1;border-radius:9px;background:#fff;margin-bottom:16px}.search input{border:0;outline:0;padding:12px;width:100%}.search button{border:0;background:#f1f5f9;padding:0 12px;cursor:pointer}
+    .result{background:#fff;border:1px solid #e2e8f0;border-radius:12px;margin:10px 0;padding:14px;overflow:auto}.result table{border-collapse:collapse;width:100%;font-size:12px}.result th,.result td{padding:8px;border-bottom:1px solid #e5e7eb;text-align:left;white-space:nowrap}
+    .formgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.actions{display:flex;gap:8px;margin-top:10px}.tablewrap{overflow:auto}.users{width:100%;border-collapse:collapse}.users th,.users td{padding:10px;border-bottom:1px solid #e2e8f0;text-align:left;font-size:12px}
+    .notice{background:#eff6ff;border-radius:10px;padding:15px;color:#1e3a8a;font-size:13px}.hidden{display:none!important}.menu{display:none}
+    @media(max-width:900px){.side{transform:translateX(-100%)}.side.open{transform:translateX(0)}.main{margin-left:0;width:100%}.menu{display:block;border:0;background:transparent;font-size:22px}.cards{grid-template-columns:repeat(2,1fr)}.grid,.formgrid{grid-template-columns:1fr}.content{padding:16px}.hero-icon{display:none}}
+    @media(max-width:520px){.cards{grid-template-columns:1fr}.right .role{display:none}}
+  </style>
+</head>
+<body>
+
+<div id="login" class="login">
+  <div class="login-card">
+    <div class="brand"><div class="logo">PH</div><div>Process Hub<small>My Sky System</small></div></div>
+    <h1>Sign in</h1><p class="muted">Use your existing Users sheet account.</p>
+    <form id="loginForm">
+      <label class="field">Username<input id="lu" autocomplete="username" required></label>
+      <label class="field">Password<input id="lp" type="password" autocomplete="current-password" required></label>
+      <button class="btn" type="submit">Sign In</button><div id="loginMsg" class="error"></div>
+    </form>
+  </div>
+</div>
+
+<div id="app" class="app hidden">
+  <aside id="side" class="side">
+    <div class="brand"><div class="logo">PH</div><div>Process Hub<small>My Sky System</small></div></div>
+    <div class="nav">
+      <button data-page="home">⌂ Dashboard</button>
+      <button data-page="search">⌕ Search Process</button>
+      <button data-page="calc">▣ Calculators</button>
+      <button data-page="history">↻ Calculation History</button>
+      <button data-page="manage" id="manageNav">⚙ Manage Users</button>
+      <button data-page="sessions" id="sessionNav">● Online Users</button>
+      <button data-page="help">? Help</button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header><button class="menu" id="menu">☰</button><div><h1 id="title">Dashboard</h1><p id="subtitle">Process and tools center</p></div><div class="right"><span id="roleBadge" class="role"></span><b id="displayName"></b><button class="btn red" id="logout">Logout</button></div></header>
+    <section class="content">
+
+      <div id="home" class="page on">
+        <div class="hero"><div><div style="font-size:11px;letter-spacing:2px">PROCESS HUB</div><h2>Everything you need in one place.</h2><p>Use the existing CTS, MSP, ZIP, Plan, Spiel, Policies, Process, Updates and Others data.</p><button class="btn" data-page="search">Search Process →</button></div><div class="hero-icon">⚡</div></div>
+        <div class="section"><h3>Quick Access</h3></div>
+        <div class="cards">
+          <button class="card" data-page="search"><div class="icon">⌕</div><h3>Search Process</h3><p>Search your existing spreadsheet process databases.</p></button>
+          <button class="card" data-page="calc"><div class="icon">▣</div><h3>Calculators</h3><p>Open your existing rebate tools through Apps Script.</p></button>
+          <button class="card" data-page="history"><div class="icon">↻</div><h3>History</h3><p>View calculation history according to your existing role rules.</p></button>
+          <button class="card" id="manageCard" data-page="manage"><div class="icon">⚙</div><h3>Manage Users</h3><p>Add, edit or delete accounts according to role.</p></button>
+        </div>
+      </div>
+
+      <div id="search" class="page"><div class="pagebox">
+        <div class="section"><h2>Search Process</h2><span id="searchStatus" class="muted"></span></div>
+        <div class="search"><input id="keyword" placeholder="Enter keyword..."><button id="doSearch">Search</button></div>
+        <div class="grid" id="taskButtons"></div><div id="searchResults"></div>
+      </div></div>
+
+      <div id="calc" class="page"><div class="pagebox">
+        <div class="section"><h2>Calculators</h2></div>
+        <div class="cards">
+          <button class="card" data-calc="RebateCalculator"><div class="icon">▣</div><h3>Standard Rebate</h3><p>Loads the existing RebateCalculator page.</p></button>
+          <button class="card" data-calc="RebateMonthly"><div class="icon">▤</div><h3>Monthly Rebate</h3><p>Loads the existing RebateMonthly page.</p></button>
+          <button class="card" data-calc="RebateChecker"><div class="icon">✓</div><h3>Rebate Checker</h3><p>Loads the existing RebateChecker page.</p></button>
+        </div>
+        <div id="calcContent" style="margin-top:18px"></div>
+      </div></div>
+
+      <div id="history" class="page"><div class="pagebox"><div class="section"><h2>Calculation History</h2><button class="btn" id="refreshHistory">Refresh</button></div><div id="historyResults"></div></div></div>
+
+      <div id="manage" class="page"><div class="pagebox">
+        <div class="section"><h2>Manage Users</h2><button class="btn" id="newUser">+ Add User</button></div>
+        <div class="notice">Admin has full management access. Semi can use the existing management workflow, but deletion remains Admin-only.</div>
+        <div id="userFormBox" class="pagebox hidden" style="margin:15px 0">
+          <h3 id="formTitle">Add User</h3><input type="hidden" id="oldUsername">
+          <div class="formgrid">
+            <label class="field">Username<input id="mu"></label><label class="field">Password<input id="mp" type="password"></label>
+            <label class="field">Role<select id="mr"><option>Admin</option><option>Semi</option><option>User</option></select></label>
+            <label class="field">Name<input id="mn"></label>
+            <label class="field">Level / Dept<input id="ml"></label><label class="field">Superior<input id="ms"></label>
+          </div>
+          <div class="actions"><button class="btn" id="saveUser">Save</button><button class="btn gray" id="cancelUser">Cancel</button><button class="btn red hidden" id="deleteUser">Delete</button></div>
+          <div id="userMsg" class="error"></div>
+        </div>
+        <div class="tablewrap"><table class="users"><thead><tr><th>Username</th><th>Name</th><th>Role</th><th>Level</th><th>Superior</th><th>Action</th></tr></thead><tbody id="usersBody"></tbody></table></div>
+      </div></div>
+
+      <div id="sessions" class="page"><div class="pagebox"><div class="section"><h2>Online Users</h2><button class="btn" id="refreshSessions">Refresh</button></div><div id="sessionsResults"></div></div></div>
+
+      <div id="help" class="page"><div class="pagebox"><h2>Help</h2><p class="muted">This frontend is designed to use your existing Google Apps Script functions and spreadsheet structure. Search uses searchTask(), user management uses getAllUsers()/manageAccount(), history uses getUserHistory(), and calculators use includePage().</p></div></div>
+    </section>
+  </main>
+</div>
+
+<script>
+let curU='',curN='',curR='',curL='',curS='';
+const tasks=['CTS','MSP','ZIP','Plan','Spiel','Aftersales Policies','Process','Updates (Pending)','OTHERS (Pending)'];
+const titles={home:['Dashboard','Process and tools center'],search:['Search Process','Search your existing spreadsheet data'],calc:['Calculators','Existing Apps Script calculation tools'],history:['Calculation History','Role-filtered calculation history'],manage:['Manage Users','User and account management'],sessions:['Online Users','Current active sessions'],help:['Help','System information']};
+
+function run(name,...args){return new Promise((resolve,reject)=>google.script.run.withSuccessHandler(resolve).withFailureHandler(reject)[name](...args))}
+function page(id){if(id==='manage' && !['Admin','Semi'].includes(curR))return;document.querySelectorAll('.page').forEach(x=>x.classList.remove('on'));document.getElementById(id).classList.add('on');document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.page===id));document.getElementById('title').textContent=titles[id][0];document.getElementById('subtitle').textContent=titles[id][1];document.getElementById('side').classList.remove('open');if(id==='manage')loadUsers();if(id==='history')loadHistory();if(id==='sessions')loadSessions()}
+function setupTasks(){document.getElementById('taskButtons').innerHTML=tasks.map(t=>`<button class="card" data-task="${t}"><div class="icon">⌕</div><h3>${t}</h3><small>Search ${t}</small></button>`).join('')}
+async function searchTaskNow(task){const k=document.getElementById('keyword').value.trim();document.getElementById('searchStatus').textContent='Searching...';try{const data=await run('searchTask',task,k);renderTable(data);document.getElementById('searchStatus').textContent=(data.length?data.length-1:0)+' result(s)';}catch(e){document.getElementById('searchStatus').textContent='Error';document.getElementById('searchResults').innerHTML='<div class="result">'+e+'</div>'}}
+function renderTable(data){if(!data||!data.length){document.getElementById('searchResults').innerHTML='<div class="result">No results found.</div>';return}let h='<div class="result"><table><thead><tr>'+data[0].map(x=>`<th>${esc(x)}</th>`).join('')+'</tr></thead><tbody>';h+=data.slice(1).map(r=>'<tr>'+r.map(x=>`<td>${esc(x)}</td>`).join('')+'</tr>').join('');h+='</tbody></table></div>';document.getElementById('searchResults').innerHTML=h}
+async function loadHistory(){const d=await run('getUserHistory',curN,curL,curS);document.getElementById('historyResults').innerHTML=d?.length?d.map(x=>`<div class="result"><b>${esc(x.header||'History')}</b><div class="muted">${esc(x.timestamp||x.date||'')} — ${esc(x.name||'')}</div><div style="margin-top:7px">${esc(x.fullDetails||x.text||'')}</div></div>`).join(''):'<div class="result">No history found.</div>'}
+async function loadUsers(){if(!['Admin','Semi'].includes(curR))return;const data=await run('getAllUsers');document.getElementById('usersBody').innerHTML=data.map(r=>`<tr><td>${esc(r[0])}</td><td>${esc(r[3])}</td><td><span class="role ${String(r[2]).toLowerCase()}">${esc(r[2])}</span></td><td>${esc(r[4])}</td><td>${esc(r[5])}</td><td><button class="btn" onclick='editUser(${JSON.stringify(r)})'>Edit</button></td></tr>`).join('')}
+function editUser(r){document.getElementById('userFormBox').classList.remove('hidden');document.getElementById('formTitle').textContent='Edit User';document.getElementById('oldUsername').value=r[0];document.getElementById('mu').value=r[0];document.getElementById('mp').value=r[1];document.getElementById('mr').value=r[2];document.getElementById('mn').value=r[3];document.getElementById('ml').value=r[4];document.getElementById('ms').value=r[5];document.getElementById('deleteUser').classList.toggle('hidden',curR!=='Admin')}
+function newUser(){document.getElementById('userFormBox').classList.remove('hidden');document.getElementById('formTitle').textContent='Add User';['oldUsername','mu','mp','mn','ml','ms'].forEach(id=>document.getElementById(id).value='');document.getElementById('mr').value='User';document.getElementById('deleteUser').classList.add('hidden')}
+async function saveUser(){const old=document.getElementById('oldUsername').value;const d={username:document.getElementById('mu').value.trim(),password:document.getElementById('mp').value,role:document.getElementById('mr').value,name:document.getElementById('mn').value,level:document.getElementById('ml').value,superior:document.getElementById('ms').value,oldUsername:old};const res=await run('manageAccount',old?'update':'add',d);document.getElementById('userMsg').textContent=res;if(String(res).toLowerCase().includes('success')){document.getElementById('userFormBox').classList.add('hidden');loadUsers()}}
+async function deleteCurrent(){const old=document.getElementById('oldUsername').value;if(!old)return;if(!confirm('Delete '+old+'?'))return;const res=await run('manageAccount','delete',{oldUsername:old,username:old});document.getElementById('userMsg').textContent=res;loadUsers()}
+async function loadSessions(){const d=await run('getLoggedInUsersList');document.getElementById('sessionsResults').innerHTML=d?.length?d.map(x=>`<div class="result"><b>${esc(x.name)}</b> — ${esc(x.username)} <span class="role ${String(x.role).toLowerCase()}">${esc(x.role)}</span><div class="muted">Level: ${esc(x.level)} | Login: ${esc(x.loginTime)}</div>${curR==='Admin'?`<button class="btn red" style="margin-top:8px" onclick="forceOut('${esc(x.username)}')">Force Logout</button>`:''}</div>`).join(''):'<div class="result">No users online.</div>'}
+async function forceOut(u){if(!confirm('Force logout '+u+'?'))return;await run('forceLogoutUser',u);loadSessions()}
+async function calc(name){document.getElementById('calcContent').innerHTML='<div class="result">Loading '+name+'...</div>';try{const html=await run('includePage',name);document.getElementById('calcContent').innerHTML=html;document.getElementById('calcContent').querySelectorAll('script').forEach(s=>{const n=document.createElement('script');n.textContent=s.textContent;s.replaceWith(n)})}catch(e){document.getElementById('calcContent').innerHTML='<div class="result">'+e+'</div>'}}
+function esc(x){return String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
+
+document.getElementById('loginForm').onsubmit=async e=>{e.preventDefault();const u=document.getElementById('lu').value.trim(),p=document.getElementById('lp').value;try{const r=await run('checkLogin',u,p);if(r.status==='success'){curU=r.username;curN=r.name;curR=r.role;curL=r.level;curS=r.superior;document.getElementById('login').classList.add('hidden');document.getElementById('app').classList.remove('hidden');document.getElementById('displayName').textContent=curN;const b=document.getElementById('roleBadge');b.textContent=curR;b.className='role '+curR.toLowerCase();if(!['Admin','Semi'].includes(curR)){document.getElementById('manageNav').classList.add('hidden');document.getElementById('manageCard').classList.add('hidden')}if(curR!=='Admin')document.getElementById('sessionNav').classList.add('hidden');page('home')}else document.getElementById('loginMsg').textContent=r.message||'Login failed.'}catch(e){document.getElementById('loginMsg').textContent=String(e)}}};
+document.getElementById('logout').onclick=async()=>{await run('logoutUser',curU);location.reload()};document.getElementById('menu').onclick=()=>document.getElementById('side').classList.toggle('open');
+document.addEventListener('click',e=>{const p=e.target.closest('[data-page]');if(p)page(p.dataset.page);const t=e.target.closest('[data-task]');if(t)searchTaskNow(t.dataset.task);const c=e.target.closest('[data-calc]');if(c)calc(c.dataset.calc)});
+document.getElementById('doSearch').onclick=()=>{const active=document.querySelector('[data-task].active');if(active)searchTaskNow(active.dataset.task)};document.getElementById('keyword').onkeydown=e=>{if(e.key==='Enter'&&window.lastTask)searchTaskNow(window.lastTask)}
+document.getElementById('newUser').onclick=newUser;document.getElementById('saveUser').onclick=saveUser;document.getElementById('cancelUser').onclick=()=>document.getElementById('userFormBox').classList.add('hidden');document.getElementById('deleteUser').onclick=deleteCurrent;document.getElementById('refreshHistory').onclick=loadHistory;document.getElementById('refreshSessions').onclick=loadSessions;
+setupTasks();
+</script>
+</body>
+</html>

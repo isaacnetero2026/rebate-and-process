@@ -1,0 +1,209 @@
+<div id="rebateCheckerPage" class="page" style="display:block;">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px; border-bottom: 2px solid #007bff; padding-bottom: 10px; background: white; padding: 15px; border-radius: 8px;">
+    <h3 style="margin:0; padding:0; line-height: 1; color: #007bff;">Rebate Checker (Multi-Range Mode)</h3>
+    <div style="display:flex; gap:5px; align-items:center;">
+      <button onclick="back()" style="background: #6c757d; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: bold; width: auto;">Back</button>
+      <button onclick="logout()" style="background-color: #dc3545; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: bold; width: auto;">Logout</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div style="background-color: #e7f3ff; color: #004085; border: 1px solid #b8daff; padding: 15px; border-radius: 4px; margin-bottom: 20px; font-size: 13px; line-height: 1.5;">
+      <strong>Checker Mode:</strong> This tool supports multiple date ranges. All ranges are summarized in the output below. <em>Note: Calculations in Checker Mode are not saved to history.</em>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+      <div class="input-group">
+        <label style="font-weight: bold; font-size: 12px;">Billing Cycle</label>
+        <select id="bcTypeChk" onchange="toggleAnchorChk()" style="padding: 8px; width: 100%;">
+          <option value="A">A - 1st of Month</option>
+          <option value="B">B - 8th of Month</option>
+          <option value="C">C - 15th of Month</option>
+          <option value="D">D - 22nd of Month</option>
+          <option value="E">E - Manual Monthly</option>
+          <option value="Quarterly">Quarterly</option>
+          <option value="Semi">Semi-Annual</option>
+          <option value="Annual">Annual</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <label style="font-weight: bold; font-size: 12px;">Cycle Start (Anchor)</label>
+        <input type="date" id="bcAnchorChk" disabled style="padding: 8px; width: 100%;">
+      </div>
+      <div class="input-group">
+        <label style="font-weight: bold; font-size: 12px;">Rebate Type</label>
+        <select id="rebateTypeChk" style="padding: 8px; width: 100%;">
+          <option value="1.0">No Connection (100%)</option>
+          <option value="0.3">Slow / Intermittent (30%)</option>
+        </select>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+      <div class="input-group">
+        <label style="font-weight: bold; font-size: 12px;">Plan Amount</label>
+        <input type="number" id="rbPlanChk" placeholder="0.00" style="padding: 8px; width: 100%;">
+      </div>
+      <div class="input-group">
+        <label style="font-weight: bold; font-size: 12px;">CRM</label>
+        <select id="rbCrmChk" style="padding: 8px; width: 100%;">
+          <option value="IBAS">IBAS</option>
+          <option value="ICMS">ICMS</option>
+        </select>
+      </div>
+    </div>
+
+    <hr style="border:0; border-top: 1px solid #eee; margin: 15px 0;">
+
+    <div id="rebateRowsChk">
+      <div class="rb-row-chk" style="display: flex; gap: 10px; background: #f9f9f9; padding: 10px; border-radius: 4px; margin-bottom: 10px; align-items: flex-end; border: 1px solid #ddd;">
+        <div style="flex:1;"><label style="font-size:10px;">Start Date</label><input type="date" class="rbStartChk" onchange="calcRowChk(this)" style="width:100%; padding:5px;"></div>
+        <div style="flex:1;"><label style="font-size:10px;">Restoration Date</label><input type="date" class="rbRestoreChk" onchange="calcRowChk(this)" style="width:100%; padding:5px;"></div>
+        <div style="width:60px;"><label style="font-size:10px;">Days</label><input type="text" class="rbDaysChk" readonly style="text-align:center; background:#e9ecef; width: 100%; padding:5px; border:1px solid #ccc;"></div>
+        <button onclick="if(document.querySelectorAll('.rb-row-chk').length > 1) this.parentElement.remove()" style="background:#dc3545; color:white; padding: 5px 12px; border:none; border-radius:4px; height: 32px; cursor:pointer; font-size: 10px; font-weight: bold;">REMOVE</button>
+      </div>
+    </div>
+
+    <div style="display:flex; gap:10px; margin-top: 15px; flex-wrap: wrap;">
+      <button onclick="addRebateRowChk()" class="nav-btn" style="width: auto; background:#6c757d; color:white; border:none; padding:10px 18px; border-radius:4px; cursor:pointer; font-weight:bold;">+ Add Row</button>
+      <button onclick="processRebateChk()" class="search-btn" style="width: auto; background: #007bff; color:white; border:none; padding:10px 18px; border-radius:4px; cursor:pointer; font-weight:bold;">Calculate Only</button>
+      <button onclick="clearCheckerForm()" class="nav-btn" style="width: auto; background:#333; color:white; border:none; padding:10px 18px; border-radius:4px; cursor:pointer; font-weight:bold;">Clear</button>
+      <button onclick="copyResults()" style="width: auto; background: #28a745; color: white; border: none; padding: 10px 18px; border-radius: 4px; cursor: pointer; font-weight:bold;">Copy Output</button>
+    </div>
+  </div>
+
+  <div id="rbOutputChk" style="background:#f8f9fa; border:2px dashed #007bff; padding:15px; font-family:monospace; white-space:pre-wrap; font-size:13px; margin-top:10px; color:#333; min-height: 50px; border-radius: 8px;"></div>
+</div>
+
+<script>
+// --- CORE UTILS ---
+function back() { if(typeof openMainSystem === 'function') { openMainSystem(); } else { alert("Navigation error."); } }
+function logout() { if(typeof logout === 'function') { logout(); } }
+function localDate(s) { return s ? new Date(s + 'T00:00:00') : null; }
+
+function fShortDate(d) { 
+  return d.toLocaleDateString('en-US', { month: 'short', day: '2-digit' }).toUpperCase() + ' ' + d.getDate() + ', ' + d.getFullYear();
+}
+
+function fMonthDay(d) {
+  return d.toLocaleDateString('en-US', { month: 'short', day: '2-digit' }).toUpperCase();
+}
+
+const rbCfgChk = { A:{d:1,m:1,f:1}, B:{d:8,m:1,f:1}, C:{d:15,m:1,f:1}, D:{d:22,m:1,f:1}, E:{manual:true,m:1,f:1}, Quarterly:{manual:true,m:3,f:2.75}, Semi:{manual:true,m:6,f:5.5}, Annual:{manual:true,m:12,f:11} };
+
+function toggleAnchorChk() { document.getElementById("bcAnchorChk").disabled = !rbCfgChk[document.getElementById("bcTypeChk").value].manual; }
+
+function addRebateRowChk() { 
+  const c = document.getElementById("rebateRowsChk"); 
+  const cl = c.firstElementChild.cloneNode(true); 
+  cl.querySelectorAll("input").forEach(i => i.value = ""); 
+  c.appendChild(cl); 
+}
+
+function calcRowChk(el) {
+  const row = el.closest(".rb-row-chk");
+  const s = localDate(row.querySelector(".rbStartChk").value);
+  const r = localDate(row.querySelector(".rbRestoreChk").value);
+  if(s && r) {
+    const diff = Date.UTC(r.getFullYear(), r.getMonth(), r.getDate()) - Date.UTC(s.getFullYear(), s.getMonth(), s.getDate());
+    const days = Math.floor(diff / 86400000);
+    row.querySelector(".rbDaysChk").value = days > 0 ? days : 0;
+  }
+}
+
+// --- CALCULATION & FORMATTING ---
+function processRebateChk() {
+  const plan = parseFloat(document.getElementById("rbPlanChk").value);
+  const cycleKey = document.getElementById("bcTypeChk").value;
+  const cycleLabelRaw = document.getElementById("bcTypeChk").options[document.getElementById("bcTypeChk").selectedIndex].text.toUpperCase();
+  const cfg = rbCfgChk[cycleKey];
+  const typeFactor = parseFloat(document.getElementById("rebateTypeChk").value);
+  const crm = document.getElementById("rbCrmChk").value;
+
+  if(!plan) return alert("Enter Plan Amount");
+  
+  let totalGrand = 0, totalDays = 0;
+  let issueRangesStr = [], restorationDatesStr = [], periodsArr = [], formulasArr = [];
+  let ranges = [];
+
+  document.querySelectorAll(".rb-row-chk").forEach(row => {
+    const sVal = row.querySelector(".rbStartChk").value;
+    const rVal = row.querySelector(".rbRestoreChk").value;
+    if(sVal && rVal) {
+      const sDate = localDate(sVal);
+      const rDate = localDate(rVal);
+      const eDate = new Date(rDate.getTime() - 86400000); // Last day of outage
+      ranges.push({s: sDate, r: rDate, e: eDate});
+      
+      issueRangesStr.push(`${fMonthDay(sDate)} - ${fMonthDay(eDate)}, ${eDate.getFullYear()}`);
+      restorationDatesStr.push(`${fMonthDay(rDate)}, ${rDate.getFullYear()}`);
+    }
+  });
+
+  if (!ranges.length) return alert("Please enter dates.");
+
+  ranges.forEach((rng) => {
+    let cur = new Date(rng.s);
+    while(cur <= rng.e) {
+      let bS;
+      if(cfg.manual) {
+        const anchorVal = document.getElementById("bcAnchorChk").value;
+        if(!anchorVal) { alert("Please set a Cycle Start Anchor date."); return; }
+        bS = localDate(anchorVal);
+        while(new Date(bS.getFullYear(), bS.getMonth()+cfg.m, bS.getDate()) <= cur) bS.setMonth(bS.getMonth()+cfg.m);
+        while(cur < bS) bS.setMonth(bS.getMonth()-cfg.m);
+      } else {
+        bS = new Date(cur.getFullYear(), cur.getMonth(), cfg.d);
+        if(cur.getDate() < cfg.d) bS.setMonth(bS.getMonth()-1);
+      }
+      
+      let bE = new Date(bS.getFullYear(), bS.getMonth()+cfg.m, bS.getDate()-1);
+      let aS = cur > bS ? cur : bS;
+      let aE = rng.e < bE ? rng.e : bE;
+      
+      let d = Math.floor((Date.UTC(aE.getFullYear(), aE.getMonth(), aE.getDate()) - Date.UTC(aS.getFullYear(), aS.getMonth(), aS.getDate()))/86400000)+1;
+      let pD = Math.floor((Date.UTC(bE.getFullYear(), bE.getMonth(), bE.getDate()) - Date.UTC(bS.getFullYear(), bS.getMonth(), bS.getDate()))/86400000)+1;
+      
+      let baseAmt = ((plan * cfg.f)/pD) * d * typeFactor;
+      let finalAmt = (crm === "ICMS") ? baseAmt / 1.12 : baseAmt;
+
+      periodsArr.push(`${fMonthDay(bS)} - ${fMonthDay(bE)}, ${bE.getFullYear()}`);
+      formulasArr.push(`FORMULA: ${fMonthDay(aS)} - ${fMonthDay(aE)}: (${plan} / ${pD}) * ${d} = ${finalAmt.toFixed(4)}`);
+
+      totalGrand += finalAmt; 
+      totalDays += d; 
+      cur = new Date(bE.getTime() + 86400000);
+    }
+  });
+
+  let cleanCycle = cycleLabelRaw.split(' - ')[0] + " - " + (cycleLabelRaw.split(' - ')[1]?.split(' ')[0] || cycleKey);
+
+  document.getElementById("rbOutputChk").innerText = 
+`ISSUE START DATE: ${issueRangesStr.join(" | ")}
+RESTORATION DATE: ${restorationDatesStr.join(" | ")}
+BILLING CYCLE: ${cleanCycle} / CRM: ${crm}
+PLAN: ${plan.toFixed(2)}
+TOTAL REQUESTED DAYS: ${totalDays}
+
+BREAKDOWN:
+PERIOD: ${periodsArr.join(" | ")}
+${formulasArr.join("\n")}
+
+ESTIMATED REBATE AMOUNT: ${totalGrand.toFixed(2)}`;
+}
+
+function copyResults() {
+  const text = document.getElementById("rbOutputChk").innerText;
+  if (!text) return alert("No results to copy!");
+  navigator.clipboard.writeText(text).then(() => alert("Copied to clipboard!"));
+}
+
+function clearCheckerForm() {
+  if(confirm("Clear Checker form?")) {
+    document.querySelectorAll("#rebateCheckerPage input").forEach(i => i.value = "");
+    document.getElementById("rbOutputChk").innerText = "";
+    const container = document.getElementById("rebateRowsChk");
+    while (container.children.length > 1) container.removeChild(container.lastChild);
+  }
+}
+</script>

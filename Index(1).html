@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    /* CSS - VARIABLES FOR THEME SWITCHING */
+    :root {
+      --bg-color: #0C090A;
+      --card-bg: #ffffff;
+      --card-text: #333333;
+      --header-bg: rgba(12, 9, 10, 0.85);
+      --section-label: white;
+      --table-bg: white;
+    }
+
+    [data-theme="dark"] {
+      --bg-color: #050505;
+      --card-bg: #1a1a1a;
+      --card-text: #e0e0e0;
+      --header-bg: rgba(0, 0, 0, 0.95);
+      --section-label: #007bff;
+      --table-bg: #222222;
+    }
+
+    html, body { background-color: var(--bg-color) !important; margin: 0; padding: 0; min-height: 100vh; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #333; padding: 20px; transition: background 0.4s ease; }
+   
+    .login-bg { background-image: url('https://drive.google.com/thumbnail?id=1YrdWBD9aLQYp3GpyWjU0PdH1gPqA79o1&sz=w1920'); background-attachment: fixed; background-position: center; background-repeat: no-repeat; background-size: cover; }
+    .box { max-width: 1100px; margin: auto; position: relative; z-index: 1; }
+    .page { display: none; }
+    input, select, button { padding: 12px; margin: 5px 0; width: 100%; border-radius: 4px; border: 1px solid #ccc; box-sizing: border-box; }
+   
+    #sharedHeader { display: none; background: var(--header-bg); padding: 15px 20px; border-bottom: 1px solid #333; margin-bottom: 20px; border-radius: 8px; backdrop-filter: blur(5px); }
+    .badge-container { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+   
+    .info-pill { padding: 8px 18px; border-radius: 20px; font-weight: bold; font-size: 0.9em; white-space: nowrap; }
+    .pill-user { background: #007bff; color: white; cursor: pointer; transition: 0.3s; border: 2px solid transparent; }
+    .pill-user:hover { background: #0056b3; border-color: #fff; }
+    .pill-time { background: #fff; color: #333; }
+    .pill-timer { background: #28a745; color: white; }
+    .pill-idle { background: #ffc107; color: #000; }
+   
+    .card { border: 1px solid #ddd; padding: 20px; margin-bottom: 20px; border-radius: 8px; background: var(--card-bg); color: var(--card-text); box-shadow: 0 4px 15px rgba(0,0,0,0.2); transition: 0.3s; }
+    [data-theme="dark"] .card { border-color: #444; }
+   
+    .header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: var(--card-bg); color: var(--card-text); padding: 15px; border-radius: 8px; }
+    .section-label { color: var(--section-label); font-weight: bold; margin: 20px 0 10px 0; display: block; border-left: 4px solid #007bff; padding-left: 10px; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); }
+   
+    .search-btn { background: #007bff; color: white; border:none; font-weight:bold; cursor:pointer; }
+    .nav-btn { background: #6c757d; color: white; width: auto; padding: 12px 20px; border:none; cursor:pointer; font-weight:bold; }
+    .logout-btn { background: #dc3545; color: white; width: auto; padding: 8px 20px; border:none; cursor:pointer; }
+    .profile-btn { background: #17a2b8; color: white; width: auto; padding: 8px 20px; border:none; cursor:pointer; font-weight:bold; border-radius:4px; }
+    .calc-btn { background: #28a745; color: white; border: none; font-weight: bold; cursor: pointer; transition: 0.2s; }
+    .tool-btn { background: white; color: #007bff; border: 1px solid #007bff; font-weight: bold; cursor: pointer; transition: 0.2s; }
+   
+    .online-card { background: rgba(255,255,255,0.9); padding: 15px; border-radius: 8px; margin-top: 10px; }
+    [data-theme="dark"] .online-card { background: rgba(30,30,30,0.9); color: white; }
+   
+    .user-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #eee; color: inherit; }
+    .dot { height: 10px; width: 10px; background-color: #28a745; border-radius: 50%; display: inline-block; margin-right: 8px; box-shadow: 0 0 5px #28a745; }
+    .force-btn { background: #dc3545; color: white; border: none; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8em; }
+   
+    .history-item { border-bottom: 1px solid rgba(125,125,125,0.2); padding: 12px 5px; }
+    .history-item:hover { background: rgba(125,125,125,0.05); }
+   
+    .theme-switch-btn { background: #444; color: white; border: none; padding: 8px 12px; cursor: pointer; font-weight: bold; border-radius: 20px; font-size: 0.8em; transition: 0.3s; }
+    .theme-switch-btn:hover { background: #666; }
+
+    .role-badge { padding: 4px 10px; border-radius: 12px; font-size: 0.7em; font-weight: bold; color: white; text-transform: uppercase; }
+    .badge-admin { background: #dc3545; }
+    .badge-semi { background: #6f42c1; }
+    .badge-user { background: #28a745; }
+  </style>
+</head>
+
+<body id="mainBody" class="login-bg" onmousemove="resetIdleTimer()" onkeydown="resetIdleTimer()">
+<div class="box">
+
+  <div id="sharedHeader">
+    <div class="badge-container">
+      <div class="info-pill pill-user" id="globalUserBadge" title="Click to view Profile" onclick="openProfile()"></div>
+      <div id="actualTime" class="info-pill pill-time">--:--:--</div>
+      <div id="idleDisplay" class="info-pill pill-idle">Idle: 05:00</div>
+      <div class="info-pill pill-timer">Session: <span id="sessionTimer">00:00</span></div>
+      <div style="display:flex; gap:5px;">
+        <button id="themeToggle" class="theme-switch-btn" onclick="toggleTheme()">🌙 Night Mode</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="sessionModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; justify-content:center; align-items:center; padding: 20px;">
+    <div class="card" style="max-width:350px; text-align:center; border:2px solid #ffc107;">
+      <h3 style="color:#ffc107; margin-top:0;">Session Expiring!</h3>
+      <p>You have been idle. You will be logged out in <span id="modalTimer" style="font-weight:bold; font-size:1.4em;">60</span> seconds.</p>
+      <button onclick="extendSession()" class="calc-btn" style="background:#28a745;">STAY LOGGED IN</button>
+    </div>
+  </div>
+
+  <div id="loginPage" class="page" style="display:block">
+    <div class="card" style="max-width: 400px; margin: 100px auto;">
+      <h2 style="text-align:center;">MY SKY LOGIN</h2>
+      <input id="u" placeholder="Username">
+      <input id="p" type="password" placeholder="Password">
+      <button onclick="login()" class="search-btn">Sign In</button>
+      <p id="msg" style="color:red; text-align:center;"></p>
+    </div>
+  </div>
+
+  <div id="managementPage" class="page">
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <h2 style="color:#6f42c1;">ACCOUNT MANAGEMENT</h2>
+        <button onclick="openMainSystem()" class="nav-btn" style="background:#333;">Back</button>
+      </div>
+      <div id="mInputCard" class="card" style="background:rgba(111, 66, 193, 0.05); border: 1px solid #6f42c1;">
+        <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px; margin-bottom: 10px;">
+          <input id="mName" placeholder="Full Name">
+          <input id="mUser" placeholder="Username">
+          <input id="mPass" placeholder="Password">
+        </div>
+        <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px;">
+          <select id="mRole"><option value="User">User</option><option value="Semi">Semi</option><option value="Admin">Admin</option></select>
+          <select id="mLevel"><option value="" disabled selected>Select Level/Dept</option></select>
+          <select id="mSuperior"><option value="" disabled selected>Select Superior</option></select>
+        </div>
+        <div style="display:flex; gap:5px; margin-top:15px;">
+          <button id="addBtn" onclick="submitUser('add')" class="calc-btn" style="display:none;">ADD</button>
+          <button id="updateBtn" onclick="submitUser('update')" class="tool-btn">UPDATE</button>
+          <button id="delBtn" onclick="submitUser('delete')" class="logout-btn" style="display:none; margin:0; flex:1;">DEL</button>
+        </div>
+        <input type="hidden" id="oldUser">
+      </div>
+      <input type="text" id="userTableSearch" onkeyup="filterUserTable()" placeholder="Search by Level, Name, or Role..." style="margin-bottom:10px; border: 2px solid #6f42c1;">
+      <div style="overflow-x:auto;">
+        <table style="width:100%; border-collapse:collapse; min-width: 600px;">
+          <thead style="background:#6f42c1; color:white; text-align:left;">
+            <tr><th style="padding:10px;">Name</th><th>User</th><th>Role</th><th>Level</th><th>Superior</th><th id="actionHead">Action</th></tr>
+          </thead>
+          <tbody id="userTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div id="tasksPage" class="page">
+    <div class="header-row">
+      <h3>Reference Guides and Calculation Tools</h3>
+      <div style="display:flex; gap:10px;">
+        <button id="mgmtBtn" onclick="openManagement()" class="profile-btn" style="display:none; background:#6f42c1;">MANAGEMENT</button>
+        <button id="gateBtn" onclick="showChoice()" style="display:none;" class="profile-btn" style="background:#17a2b8;">Back</button>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+      </div>
+    </div>
+    <div id="dashboardMenu">
+      <span class="section-label">Search Process Tool</span>
+      <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">
+        <button class="tool-btn" onclick="autoOpen('CTS')">CTS</button>
+        <button class="tool-btn" onclick="autoOpen('MSP')">MSP</button>
+        <button class="tool-btn" onclick="autoOpen('ZIP')">ZIP</button>
+        <button class="tool-btn" onclick="autoOpen('Plan')">PLAN</button>
+        <button class="tool-btn" onclick="autoOpen('Spiel')">SPIEL</button>
+        <button class="tool-btn" onclick="autoOpen('Aftersales Policies')">POLICIES</button>
+        <button class="tool-btn" onclick="autoOpen('Process')">PROCESS</button>
+        <button class="tool-btn" onclick="autoOpen('Updates (Pending)')">UPDATES</button>
+        <button class="tool-btn" onclick="autoOpen('OTHERS (Pending)')">OTHERS</button>
+      </div>
+      <span class="section-label">Calculators</span>
+      <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+        <button class="calc-btn" onclick="openRebateMonthly()" style="background: #6f42c1;">MONTHLY REBATE</button>
+        <button class="calc-btn" onclick="openRebateStandard()">STANDARD REBATE</button>
+        <button class="calc-btn" id="checkerQuickBtn" onclick="openRebateChecker()" style="background: #007bff;">QUICK CHECKER</button>
+      </div>
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 20px;">
+        <span class="section-label" style="margin: 0;">Online Users</span>
+        <button onclick="refreshOnlineList()" class="profile-btn" style="width: auto; padding: 5px 15px; background: #28a745;">↻ Refresh</button>
+      </div>
+      <div class="online-card" id="onlineCardBox"><div id="onlineUsersList">Loading active users...</div></div>
+    </div>
+    <div id="quickSearchBox" class="card" style="display:none; flex-direction:column; gap:10px; border: 2px solid #007bff;">
+      <label id="activeToolLabel" style="font-weight:bold; color:#007bff;"></label>
+      <div style="display:flex; gap:10px;">
+        <input id="dashboardSearch" placeholder="Search..." onkeydown="if(event.key==='Enter') runSearch()">
+        <button onclick="runSearch()" class="search-btn" style="width:100px;">Go</button>
+        <button onclick="closeSearch()" class="nav-btn" style="background:#333;">X</button>
+      </div>
+      <div id="searchResultArea" style="overflow-x:auto;"></div>
+    </div>
+  </div>
+
+  <div id="profilePage" class="page">
+    <div class="card">
+      <h3>My Profile</h3>
+      <label>Name:</label><input id="profName" readonly style="background:rgba(125,125,125,0.1);">
+      <label>Role:</label><input id="profRole" readonly style="background:rgba(125,125,125,0.1);">
+      <label>Level:</label><input id="profLevel" readonly style="background:rgba(125,125,125,0.1);">
+      <hr>
+      <label>Username:</label><input id="profUser">
+      <label>Password:</label><input id="profPass" type="password">
+      <button class="search-btn" onclick="updateProfile()">Update Credentials</button>
+      <button class="nav-btn" onclick="closeProfile()" style="width:100%; margin-top:10px;">Back</button>
+    </div>
+  </div>
+
+  <div id="choicePage" class="page">
+    <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:15px; margin-bottom:20px;">
+      <div class="card" style="margin:0; text-align:center; padding:10px; border-top:4px solid #007bff;">
+        <small style="opacity:0.7; font-weight:bold;">TOTAL SYSTEM LOGS</small>
+        <h2 id="statTotal" style="margin:5px 0; color:#007bff;">--</h2>
+      </div>
+      <div class="card" style="margin:0; text-align:center; padding:10px; border-top:4px solid #28a745;">
+        <small style="opacity:0.7; font-weight:bold;">YOUR CALCULATIONS</small>
+        <h2 id="statMine" style="margin:5px 0; color:#28a745;">--</h2>
+      </div>
+      <div class="card" style="margin:0; text-align:center; padding:10px; border-top:4px solid #ffc107;">
+        <small style="opacity:0.7; font-weight:bold;">LATEST REFERENCE</small>
+        <h2 id="statLatest" style="margin:5px 0; font-size:1em; color:#ffc107; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">--</h2>
+      </div>
+    </div>
+
+    <div id="choiceGrid" style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin-top:10px;">
+      <div class="card" id="checkerChoiceCard" onclick="openRebateChecker()" style="text-align:center; cursor:pointer; border-bottom: 5px solid #007bff;"><h2>Quick Checker</h2></div>
+      <div class="card" onclick="openMainSystem()" style="text-align:center; cursor:pointer; border-bottom: 5px solid #28a745;"><h2>Main System</h2></div>
+    </div>
+   
+    <div class="card" style="background: var(--card-bg);">
+      <h3 style="margin-top:0;">CALCULATION HISTORY</h3>
+      <input type="text" id="choiceHistSearch" onkeyup="filterChoiceHistory()" placeholder="Search Account Number, User Name, or Reference..." style="margin-bottom:15px; border: 2px solid #6f42c1;">
+      <div id="choiceHistList" style="max-height: 400px; overflow-y: auto;">Loading logs...</div>
+    </div>
+    <button class="logout-btn" onclick="logout()" style="display:block; margin: 20px auto;">Logout</button>
+  </div>
+
+  <div id="rebateMonthlyPage" class="page">
+    <div class="card" id="rebateMonthlyContent">Loading...</div>
+  </div>
+  <div id="rebatePage" class="page">
+    <div class="card" id="rebateContent">Loading...</div>
+  </div>
+  <div id="rebateCheckerPage" class="page">
+    <div class="card" id="rebateCheckerContent">Loading...</div>
+  </div>
+
+</div>
+
+<script>
+let curU, curP, curR, curN, curL, curSup, epoch, currentTask, idleTime = 300, prevPage = "tasksPage";
+let choiceHistCache = [];
+
+// --- THEME LOGIC ---
+function toggleTheme() {
+  const currentTheme = document.documentElement.getAttribute("data-theme");
+  const newTheme = currentTheme === "dark" ? "light" : "dark";
+  document.documentElement.setAttribute("data-theme", newTheme);
+  localStorage.setItem("mySkyTheme", newTheme);
+  updateThemeButton(newTheme);
+}
+function updateThemeButton(theme) {
+  const btn = document.getElementById("themeToggle");
+  if(btn) btn.innerText = theme === "dark" ? "☀️ Light Mode" : "🌙 Night Mode";
+}
+(function() {
+  const savedTheme = localStorage.getItem("mySkyTheme") || "light";
+  document.documentElement.setAttribute("data-theme", savedTheme);
+  window.addEventListener('DOMContentLoaded', () => updateThemeButton(savedTheme));
+})();
+
+function resetIdleTimer() {
+  idleTime = 300;
+  const modal = document.getElementById("sessionModal");
+  if(modal && modal.style.display === "flex") modal.style.display = "none";
+}
+function extendSession() { resetIdleTimer(); }
+
+// --- AUTHENTICATION ---
+function login() {
+  const uVal = document.getElementById("u").value, pVal = document.getElementById("p").value;
+  google.script.run.withSuccessHandler(r => {
+    if (r && r.status === "success") {
+      curU=r.username; curP=r.password; curR=r.role; curN=r.name; curL=r.level; curSup=r.superior;
+      document.getElementById("globalUserBadge").innerText = r.name + " - " + r.level;
+      document.getElementById("sharedHeader").style.display = "block";
+      document.getElementById("mainBody").classList.remove("login-bg");
+      
+      const addBtn = document.getElementById("addBtn");
+      if(curR === "Admin") {
+        document.getElementById("mgmtBtn").style.display = "block";
+        document.getElementById("gateBtn").style.display = "block";
+        document.getElementById("checkerQuickBtn").style.display = "block";
+        addBtn.style.display = "block";
+      } else if (curR === "Semi") {
+        document.getElementById("mgmtBtn").style.display = "block";
+        document.getElementById("gateBtn").style.display = "block";
+        document.getElementById("checkerQuickBtn").style.display = "block";
+        addBtn.style.display = "none";
+      } else {
+        document.getElementById("mgmtBtn").style.display = "none";
+        document.getElementById("gateBtn").style.display = "none";
+        document.getElementById("checkerQuickBtn").style.display = "none";
+        if(document.getElementById("checkerChoiceCard")) document.getElementById("checkerChoiceCard").style.display = "none";
+        document.getElementById("choiceGrid").style.gridTemplateColumns = "1fr";
+      }
+     
+      r.needsChoice ? showChoice() : openMainSystem();
+      startLive(r.loginTime);
+      startIdleCounter();
+      refreshOnlineList(); 
+    } else { document.getElementById("msg").innerText = r.message; }
+  }).checkLogin(uVal, pVal);
+}
+
+function hideAll() {
+  ["loginPage", "choicePage", "tasksPage", "rebateCheckerPage", "rebateMonthlyPage", "rebatePage", "profilePage", "managementPage"].forEach(id => {
+    const el = document.getElementById(id);
+    if(el && el.style.display === "block") prevPage = id;
+    if(el) el.style.display = "none";
+  });
+}
+function openMainSystem() { hideAll(); document.getElementById("tasksPage").style.display = "block"; }
+function showChoice() { hideAll(); document.getElementById("choicePage").style.display = "block"; refreshChoiceHistory(); }
+function logout() { google.script.run.withSuccessHandler(() => location.reload()).logoutUser(curU); }
+
+// --- CALCULATION TOOL LOADING ---
+function openRebateStandard() {
+  hideAll();
+  const container = document.getElementById("rebateContent");
+  container.innerHTML = "<i>Loading Standard Rebate Engine...</i>";
+  document.getElementById("rebatePage").style.display = "block";
+  google.script.run.withSuccessHandler(html => { injectAndExecute(container, html); }).includePage('RebateCalculator');
+}
+function openRebateMonthly() {
+  hideAll();
+  const container = document.getElementById("rebateMonthlyContent");
+  container.innerHTML = "<i>Loading Monthly Rebate Tool...</i>";
+  document.getElementById("rebateMonthlyPage").style.display = "block";
+  google.script.run.withSuccessHandler(html => { injectAndExecute(container, html); }).includePage('RebateMonthly');
+}
+function openRebateChecker() {
+  hideAll();
+  const container = document.getElementById("rebateCheckerContent");
+  container.innerHTML = "<i>Loading Rebate Checker...</i>";
+  document.getElementById("rebateCheckerPage").style.display = "block";
+  google.script.run.withSuccessHandler(html => { injectAndExecute(container, html); }).includePage('RebateChecker');
+}
+function injectAndExecute(container, html) {
+  container.innerHTML = html;
+  const scripts = container.querySelectorAll("script");
+  scripts.forEach(oldScript => {
+    const newScript = document.createElement("script");
+    Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
+    newScript.appendChild(document.createTextNode(oldScript.innerHTML));
+    oldScript.parentNode.replaceChild(newScript, oldScript);
+  });
+
+  setTimeout(() => {
+    if (typeof loadHistory === "function") {
+      loadHistory();
+    }
+  }, 300);
+}
+
+// --- HISTORY LOGIC (FIXED FOR TEAM VIEWING) ---
+function refreshChoiceHistory() {
+  // Pass current user info to the backend to filter history properly
+  google.script.run.withSuccessHandler(data => {
+    choiceHistCache = data;
+    renderChoiceHistory(data);
+    document.getElementById("statTotal").innerText = data.length;
+    document.getElementById("statMine").innerText = data.filter(i => i.name === curN).length;
+    document.getElementById("statLatest").innerText = data.length > 0 ? data[0].ref : "NONE";
+  }).getChoiceHistory(curN, curR, curSup);
+}
+
+function renderChoiceHistory(data) {
+  const container = document.getElementById("choiceHistList");
+  if (!data || data.length === 0) {
+    container.innerHTML = "<p style='text-align:center; padding:20px; opacity:0.6;'>No logs found.</p>";
+    return;
+  }
+ 
+  let h = "";
+  data.forEach((item, idx) => {
+    const headerTitle = `ACCT: ${item.acc} | REF: ${item.ref} | ${item.name} | ${item.amt}`;
+    const superiorText = item.superior ? `<div style="font-size:0.8em; margin-bottom:5px; color:#6f42c1;">SUPERIOR: ${item.superior}</div>` : "";
+   
+    h += `<div class="history-item">
+      <div style="display:flex; justify-content:space-between; align-items:center; width:100%; gap: 10px;">
+        <span style="font-family: 'Courier New', monospace; font-weight:bold; font-size: 0.85em; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${headerTitle}</span>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size:0.75em; opacity: 0.7;">${item.timestamp}</span>
+          <button onclick="toggleChoiceLog(${idx})" id="tglBtn-${idx}" style="color:#007bff; background:none; border: 1px solid #007bff; padding: 2px 8px; border-radius: 4px; cursor: pointer; font-size: 0.75em;">EXPAND</button>
+        </div>
+      </div>
+      <div id="logBody-${idx}" style="display:none; margin-top:10px; padding:15px; background:rgba(125,125,125,0.05); border-left:4px solid #28a745; position: relative;">
+        <button onclick="copyLogToClipboard(${idx})" style="position: absolute; top: 10px; right: 10px; background: #28a745; color: white; border: none; padding: 5px 10px; cursor: pointer; font-size: 0.75em;">COPY</button>
+        ${superiorText}
+        <pre id="logText-${idx}" style="white-space: pre-wrap; font-size: 0.85em;">${item.fullDetails}</pre>
+      </div>
+    </div>`;
+  });
+  container.innerHTML = h;
+}
+function toggleChoiceLog(idx) {
+  const b = document.getElementById(`logBody-${idx}`), t = document.getElementById(`tglBtn-${idx}`);
+  b.style.display = b.style.display === "none" ? "block" : "none";
+  t.innerText = b.style.display === "none" ? "EXPAND" : "COLLAPSE";
+}
+function copyLogToClipboard(idx) {
+  const text = document.getElementById(`logText-${idx}`).innerText;
+  const el = document.createElement("textarea"); el.value = text; document.body.appendChild(el); el.select();
+  document.execCommand('copy'); document.body.removeChild(el); alert("Copied!");
+}
+function filterChoiceHistory() {
+  const kw = document.getElementById("choiceHistSearch").value.toLowerCase();
+  const f = choiceHistCache.filter(i => i.acc.toLowerCase().includes(kw) || i.name.toLowerCase().includes(kw) || i.ref.toLowerCase().includes(kw));
+  renderChoiceHistory(f);
+}
+
+// --- UPDATED MANAGEMENT & PROFILE WITH ALERTS ---
+function openManagement() {
+  hideAll();
+  document.getElementById("managementPage").style.display = "block";
+  google.script.run.withSuccessHandler(data => {
+    const lvl = document.getElementById("mLevel"), sup = document.getElementById("mSuperior");
+    lvl.innerHTML = '<option value="" disabled selected>Select Level/Dept</option>' +
+                    data.levels.map(l => `<option value="${l}">${l}</option>`).join('');
+    sup.innerHTML = '<option value="" disabled selected>Select Superior</option>' +
+                    data.superiors.map(s => `<option value="${s}">${s}</option>`).join('');
+  }).getUserDropdownData();
+  document.getElementById("mInputCard").style.display = (curR === "Admin" || curR === "Semi") ? "block" : "none";
+  document.getElementById("delBtn").style.display = "none";
+  loadUserTable();
+}
+
+function loadUserTable() {
+  google.script.run.withSuccessHandler(data => {
+    let html = "";
+    data.forEach(r => {
+      let roleClass = r[2] === "Admin" ? "badge-admin" : (r[2] === "Semi" ? "badge-semi" : "badge-user");
+      html += `<tr>
+        <td style="padding:10px;">${r[3]}</td>
+        <td>${r[0]}</td>
+        <td><span class="role-badge ${roleClass}">${r[2]}</span></td>
+        <td>${r[4]}</td>
+        <td>${r[5]}</td>
+        <td><button class="profile-btn" style="padding:4px 10px; font-size:0.8em;" onclick="editUser('${r[0]}','${r[1]}','${r[2]}','${r[3]}','${r[4]}','${r[5]}')">EDIT</button></td>
+      </tr>`;
+    });
+    document.getElementById("userTableBody").innerHTML = html;
+  }).getAllUsers();
+}
+
+function editUser(u, p, r, n, l, s) {
+  document.getElementById("mUser").value = u;
+  document.getElementById("oldUser").value = u;
+  document.getElementById("mPass").value = p;
+  document.getElementById("mRole").value = r;
+  document.getElementById("mName").value = n;
+  document.getElementById("mLevel").value = l;
+  document.getElementById("mSuperior").value = s;
+  if (curR === "Admin") {
+    document.getElementById("delBtn").style.display = "block";
+  } else {
+    document.getElementById("delBtn").style.display = "none";
+  }
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function submitUser(action) {
+  const newUser = document.getElementById("mUser").value.trim();
+  const oldUser = document.getElementById("oldUser").value.trim();
+  if (action === "delete") {
+    if(curR !== "Admin") { alert("Only Admins can delete users."); return; }
+    if(!confirm(`Delete user "${newUser}"?`)) return;
+  }
+  if (action === "add" && curR !== "Admin") { alert("Only Admins can add users."); return; }
+  if (!newUser && action !== "delete") { alert("Username required."); return; }
+
+  const userData = {
+    username: newUser, oldUsername: oldUser,
+    password: document.getElementById("mPass").value, role: document.getElementById("mRole").value,
+    name: document.getElementById("mName").value, level: document.getElementById("mLevel").value,
+    superior: document.getElementById("mSuperior").value
+  };
+
+  google.script.run.withSuccessHandler(msg => {
+    if (msg === "DUPLICATE_ERROR") {
+      alert("⚠️ ACCESS DENIED: The username '" + newUser + "' is already in use.");
+    } else if (msg === "SUCCESS_ADD" || msg === "User Added Successfully") {
+      alert("✅ User Added Successfully!");
+      loadUserTable();
+      clearMgmtFields();
+    } else if (msg === "SUCCESS_UPDATE" || msg === "User Updated Successfully") {
+      alert("✅ User Updated Successfully!");
+      loadUserTable();
+      clearMgmtFields();
+    } else if (msg === "SUCCESS_DELETE" || msg === "User Deleted Successfully") {
+      alert("🗑️ User Deleted Successfully.");
+      loadUserTable();
+      clearMgmtFields();
+    } else {
+      alert(msg);
+      loadUserTable();
+    }
+  }).manageAccount(action, userData);
+}
+
+function clearMgmtFields() {
+  ["mUser","mPass","mName","oldUser","mLevel","mSuperior"].forEach(id => { if(document.getElementById(id)) document.getElementById(id).value = ""; });
+  document.getElementById("delBtn").style.display = "none";
+}
+
+function openProfile() {
+  hideAll();
+  document.getElementById("profName").value = curN; document.getElementById("profRole").value = curR;
+  document.getElementById("profLevel").value = curL; document.getElementById("profUser").value = curU;
+  document.getElementById("profPass").value = curP; document.getElementById("profilePage").style.display = "block";
+}
+function closeProfile() {
+  document.getElementById("profilePage").style.display = "none";
+  if(prevPage && document.getElementById(prevPage)) {
+    document.getElementById(prevPage).style.display = "block";
+  } else {
+    openMainSystem();
+  }
+}
+
+function updateProfile() {
+  const nU = document.getElementById("profUser").value.trim(), nP = document.getElementById("profPass").value;
+  if (!nU || !nP) { alert("Empty fields!"); return; }
+  google.script.run.withSuccessHandler(res => {
+    if (res === "DUPLICATE_ERROR") {
+      alert("⚠️ UPDATE FAILED: The username '" + nU + "' is already taken by another account.");
+    } else if (res === "SUCCESS_BADGE" || res.status === "success") {
+      alert("✅ Profile updated successfully!");
+      curU = nU; curP = nP;
+    } else {
+      alert("❌ Error updating profile.");
+    }
+  }).updateUserCredentials(curU, nU, nP);
+}
+
+// --- UTILS ---
+function filterUserTable() {
+  let input = document.getElementById("userTableSearch").value.toLowerCase();
+  let rows = document.getElementById("userTableBody").getElementsByTagName("tr");
+  for (let row of rows) { row.style.display = row.textContent.toLowerCase().includes(input) ? "" : "none"; }
+}
+
+function startLive(t) {
+  epoch = t;
+  setInterval(() => {
+    document.getElementById("actualTime").innerText = new Date().toLocaleTimeString();
+    let diff = Math.floor((new Date().getTime() - epoch) / 1000);
+    let m = Math.floor(diff/60).toString().padStart(2,'0'), s = (diff%60).toString().padStart(2,'0');
+    document.getElementById("sessionTimer").innerText = m + ":" + s;
+  }, 1000);
+}
+
+function startIdleCounter() {
+  setInterval(() => {
+    idleTime--;
+    let m = Math.floor(idleTime/60).toString().padStart(2,'0'), s = (idleTime%60).toString().padStart(2,'0');
+    document.getElementById("idleDisplay").innerText = "Idle: " + m + ":" + s;
+    if (idleTime === 60) document.getElementById("sessionModal").style.display = "flex";
+    if (idleTime <= 60 && idleTime > 0) document.getElementById("modalTimer").innerText = idleTime;
+    if (idleTime <= 0) logout();
+  }, 1000);
+  setInterval(refreshOnlineList, 30000);
+}
+
+function refreshOnlineList() {
+  const list = document.getElementById("onlineUsersList");
+  if (!list) return;
+
+  google.script.run.withSuccessHandler(users => {
+    if (!users || users.length === 0) {
+      list.innerHTML = "<div style='opacity:0.6; text-align:center; padding:10px;'>No users online.</div>";
+      return;
+    }
+    let html = "";
+    users.forEach(u => {
+      let canKick = (curR === "Admin" || curR === "Semi") && u.username !== curU;
+      let fBtn = canKick ? `<button class="force-btn" onclick="kickUser('${u.username}')" style="background:#dc3545; color:white; border:none; border-radius:4px; cursor:pointer; padding:2px 8px; font-size:10px;">Kick</button>` : "";
+     
+      html += `
+        <div class="user-row" style="display:flex; justify-content:space-between; align-items:center; padding:5px; border-bottom:1px solid rgba(125,125,125,0.1);">
+          <div style="flex:1.5;"><span class="dot"></span><b>${u.name}</b> <small>(${u.level})</small></div>
+          <div style="flex:1; text-align:center;">${fBtn}</div>
+          <div style="flex:1; text-align:right;"><small>${u.loginTime}</small></div>
+        </div>`;
+    });
+    list.innerHTML = html;
+  }).getLoggedInUsersList();
+}
+
+function kickUser(t) {
+  if(confirm("Kick " + t + "?")) {
+    google.script.run.withSuccessHandler(() => {
+      alert("User " + t + " has been logged out.");
+      refreshOnlineList();
+    }).forceLogoutUser(t);
+  }
+}
+
+function autoOpen(task) { currentTask = task; document.getElementById("dashboardMenu").style.display = "none"; document.getElementById("quickSearchBox").style.display = "flex"; document.getElementById("activeToolLabel").innerText = task + " SEARCH"; }
+function closeSearch() { document.getElementById("quickSearchBox").style.display = "none"; document.getElementById("dashboardMenu").style.display = "block"; }
+
+function runSearch() {
+  const kw = document.getElementById("dashboardSearch").value, area = document.getElementById("searchResultArea");
+  if(!kw) return; area.innerHTML = "Searching...";
+  google.script.run.withSuccessHandler(d => {
+    if (!d || d.length <= 1) { area.innerHTML = "No results."; return; }
+    let h = "<table style='width:100%; font-size:12px; border-collapse:collapse; margin-top:10px;'>";
+    d.forEach((r, i) => { h += "<tr>"; r.forEach(c => { let s = i === 0 ? "background:rgba(125,125,125,0.2); font-weight:bold;" : "white-space:pre-wrap;"; h += `<td style='border:1px solid #ddd; padding:10px; ${s}'>${c}</td>`; }); h += "</tr>"; });
+    area.innerHTML = h + "</table>";
+  }).searchTask(currentTask, kw);
+}
+</script>
+
+</body>
+</html>

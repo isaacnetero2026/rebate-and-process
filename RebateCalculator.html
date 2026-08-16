@@ -1,0 +1,263 @@
+<div id="rebatePage" class="page" style="display:block;">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px; border-bottom: 2px solid #28a745; padding-bottom: 10px; background: white; padding: 15px; border-radius: 8px;">
+    <h3 style="margin:0; padding:0; line-height: 1; color: #28a745;">Standard Rebate Engine</h3>
+    <div style="display:flex; gap:5px; align-items:center;">
+      <button onclick="back()" style="background: #6c757d; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: bold; width: auto;">Back</button>
+      <button onclick="logout()" style="background-color: #dc3545; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: bold; width: auto;">Logout</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div style="background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; padding: 15px; border-radius: 4px; margin-bottom: 20px; font-size: 13px; line-height: 1.5;">
+      <strong>Note:</strong> Please ensure that all computations are carefully reviewed, as this calculator is currently in a test run and relies on the data provided. Should you encounter any errors, kindly contact your administrator and provide a screenshot for reference.
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+      <div class="input-group">
+        <label style="font-weight: bold; font-size: 12px;">Billing Cycle</label>
+        <select id="bcType" onchange="toggleAnchor()">
+          <option value="A">A - 1st of Month</option>
+          <option value="B">B - 8th of Month</option>
+          <option value="C">C - 15th of Month</option>
+          <option value="D">D - 22nd of Month</option>
+          <option value="E">E - Manual Monthly</option>
+          <option value="Quarterly">Quarterly</option>
+          <option value="Semi">Semi-Annual</option>
+          <option value="Annual">Annual</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <label style="font-weight: bold; font-size: 12px;">Cycle Start (Anchor)</label>
+        <input type="date" id="bcAnchor" disabled>
+      </div>
+      <div class="input-group">
+        <label style="font-weight: bold; font-size: 12px;">Rebate Type</label>
+        <select id="rebateTypeStandard">
+          <option value="1.0">No Connection (100%)</option>
+          <option value="0.3">Slow / Intermittent (30%)</option>
+        </select>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+      <div class="input-group">
+        <label style="font-weight: bold; font-size: 12px;">Reference (NTR/NAR/INC/SF)</label>
+        <input type="text" id="rbRef" placeholder="Enter Reference #">
+      </div>
+      <div class="input-group">
+        <label style="font-weight: bold; font-size: 12px;">RFO (Reason for Outage)</label>
+        <input type="text" id="rbRfo" placeholder="Enter Reason">
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+      <div class="input-group">
+        <label style="font-weight: bold; font-size: 12px;">Account Number</label>
+        <input type="text" id="rbAccNum" placeholder="9 or 13 characters">
+      </div>
+      <div class="input-group">
+        <label style="font-weight: bold; font-size: 12px;">Plan Amount</label>
+        <input type="number" id="rbPlan" placeholder="0.00">
+      </div>
+      <div class="input-group">
+        <label style="font-weight: bold; font-size: 12px;">CRM</label>
+        <select id="rbCrm">
+          <option value="IBAS">IBAS</option>
+          <option value="ICMS">ICMS</option>
+        </select>
+      </div>
+    </div>
+
+    <hr style="border:0; border-top: 1px solid #eee; margin: 15px 0;">
+
+    <div id="rebateRows">
+      <div class="rb-row" style="display: flex; gap: 10px; background: #f9f9f9; padding: 10px; border-radius: 4px; margin-bottom: 10px; align-items: flex-end; border: 1px solid #ddd;">
+        <div style="flex:1;"><label style="font-size:10px;">Start Date</label><input type="date" class="rbStart" onchange="calcRow(this)"></div>
+        <div style="flex:1;"><label style="font-size:10px;">Restoration Date</label><input type="date" class="rbRestore" onchange="calcRow(this)"></div>
+        <div style="width:60px;"><label style="font-size:10px;">Days</label><input type="text" class="rbDays" readonly style="text-align:center; background:#e9ecef; width: 100%;"></div>
+        <button onclick="if(document.querySelectorAll('.rb-row').length > 1) this.parentElement.remove()" style="background:#dc3545; color:white; padding: 5px 12px; border:none; border-radius:4px; height: 35px; cursor:pointer; font-size: 10px; font-weight: bold;">REMOVE</button>
+      </div>
+    </div>
+
+    <div style="display:flex; gap:10px; margin-top: 15px;">
+      <button onclick="addRebateRow()" class="nav-btn" style="width: auto;">+ Add Row</button>
+      <button onclick="processRebate()" class="search-btn" style="background: #28a745; width: auto;">Calculate & Save</button>
+      <button onclick="clearRebateForm()" class="nav-btn" style="width: auto;">Clear</button>
+      <button onclick="copyRebate()" class="search-btn" style="background: #007bff; width: auto;">Copy Output</button>
+    </div>
+  </div>
+
+  <div id="rbOutput" style="background:white; border:2px solid #333; padding:15px; font-family:monospace; white-space:pre-wrap; font-size:13px; margin-top:10px; color:#000; min-height: 50px;"></div>
+getUserHistory
+  <div class="card" style="margin-top:20px; border-top: 3px solid #28a745;">
+    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #eee; padding-bottom:10px; margin-bottom:10px;">
+      <h4 style="margin:0; color:#28a745;">Recent Standard Calculations</h4>
+      <button class="refresh-mini-btn" onclick="loadHistoryStd()" style="color:#28a745; border-color:#28a745; padding: 5px 10px; font-size: 11px;">Refresh History</button>
+    </div>
+    <div id="historyListStd" style="max-height: 350px; overflow-y: auto;">
+      <p style="font-size: 0.8em; color: #888; text-align: center;">Records will appear here.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+// --- BRIDGE & CONFIG ---
+const rbCfg = { A:{d:1,m:1,f:1}, B:{d:8,m:1,f:1}, C:{d:15,m:1,f:1}, D:{d:22,m:1,f:1}, E:{manual:true,m:1,f:1}, Quarterly:{manual:true,m:3,f:2.75}, Semi:{manual:true,m:6,f:5.5}, Annual:{manual:true,m:12,f:11} };
+
+function back() { if(typeof openMainSystem === 'function') { openMainSystem(); } else { alert("Main system not found."); } }
+function localDate(s) { if(!s) return null; const b = s.split(/\D/); return new Date(b[0], b[1]-1, b[2]); }
+function formatDate(d) { const m = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"]; return `${m[d.getMonth()]} ${String(d.getDate()).padStart(2,'0')}, ${d.getFullYear()}`; }
+function fmtTxt(d) { const m = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"]; return d ? `${m[d.getMonth()]} ${String(d.getDate()).padStart(2, '0')}` : ""; }
+
+function toggleAnchor() { document.getElementById("bcAnchor").disabled = !rbCfg[document.getElementById("bcType").value].manual; }
+function addRebateRow() { const c = document.getElementById("rebateRows"); const cl = c.firstElementChild.cloneNode(true); cl.querySelectorAll("input").forEach(i => i.value = ""); c.appendChild(cl); }
+
+function calcRow(el) {
+  const row = el.closest(".rb-row");
+  const s = localDate(row.querySelector(".rbStart").value);
+  const r = localDate(row.querySelector(".rbRestore").value);
+  if(s && r) {
+    const days = Math.floor((Date.UTC(r.getFullYear(), r.getMonth(), r.getDate()) - Date.UTC(s.getFullYear(), s.getMonth(), s.getDate())) / 86400000);
+    row.querySelector(".rbDays").value = days > 0 ? days : 0;
+  }
+}
+
+// --- CALCULATION ENGINE ---
+function processRebate() {
+  const plan = parseFloat(document.getElementById("rbPlan").value);
+  const accNum = document.getElementById("rbAccNum").value.trim();
+  const type = document.getElementById("bcType").value;
+  const cfg = rbCfg[type];
+  const typeFactor = parseFloat(document.getElementById("rebateTypeStandard").value);
+  const crm = document.getElementById("rbCrm").value;
+  const ref = document.getElementById("rbRef").value.trim();
+  const rfo = document.getElementById("rbRfo").value;
+  
+  // Use Global Variables from Index.html
+  const activeUser = (typeof curN !== 'undefined') ? curN : "User";
+  const activeLevel = (typeof curL !== 'undefined') ? curL : "N/A";
+  const activeUsername = (typeof curU !== 'undefined') ? curU : "User";
+  const activeSuperior = (typeof curSup !== 'undefined') ? curSup : "N/A";
+
+  if (!ref || !accNum || !plan) return alert("Fill in Ref, Account, and Plan.");
+  
+  let totalGrand = 0, totalDays = 0, breakdown = "", periods = [], ranges = [];
+  document.querySelectorAll(".rb-row").forEach(row => {
+    const sVal = row.querySelector(".rbStart").value;
+    const rVal = row.querySelector(".rbRestore").value;
+    if(sVal && rVal) ranges.push({s: localDate(sVal), r: localDate(rVal)});
+  });
+
+  if (!ranges.length) return alert("Enter dates.");
+
+  ranges.forEach((rng) => {
+    let cur = new Date(rng.s);
+    const stop = new Date(rng.r.getTime() - 86400000);
+    while(cur <= stop) {
+      let bS;
+      if(cfg.manual) {
+        const anchorVal = document.getElementById("bcAnchor").value;
+        if(!anchorVal) { alert("Please set a Cycle Start Anchor date."); return; }
+        bS = localDate(anchorVal);
+        while(new Date(bS.getFullYear(), bS.getMonth()+cfg.m, bS.getDate()) <= cur) bS.setMonth(bS.getMonth()+cfg.m);
+        while(cur < bS) bS.setMonth(bS.getMonth()-1);
+      } else {
+        bS = new Date(cur.getFullYear(), cur.getMonth(), cfg.d);
+        if(cur.getDate() < cfg.d) bS.setMonth(bS.getMonth()-1);
+      }
+      let bE = new Date(bS.getFullYear(), bS.getMonth()+cfg.m, bS.getDate()-1);
+      let aS = cur > bS ? cur : bS;
+      let aE = stop < bE ? stop : bE;
+      let d = Math.floor((Date.UTC(aE.getFullYear(), aE.getMonth(), aE.getDate()) - Date.UTC(aS.getFullYear(), aS.getMonth(), aS.getDate()))/86400000)+1;
+      let pD = Math.floor((Date.UTC(bE.getFullYear(), bE.getMonth(), bE.getDate()) - Date.UTC(bS.getFullYear(), bS.getMonth(), bS.getDate()))/86400000)+1;
+      let amt = ((plan * cfg.f)/pD) * d * typeFactor;
+      if(crm === "ICMS") amt /= 1.12;
+
+      periods.push(`${fmtTxt(bS)} - ${fmtTxt(bE)}, ${bE.getFullYear()}`);
+      breakdown += `FORMULA: ${fmtTxt(aS)} - ${fmtTxt(aE)}, ${aE.getFullYear()}: (${plan} * ${cfg.f} / ${pD}) * ${d}${crm === "ICMS" ? " / 1.12" : ""}${typeFactor===0.3?' * 0.3':''} = ${amt.toFixed(4)}\n`;
+      totalGrand += amt; totalDays += d; cur = new Date(bE.getTime() + 86400000);
+    }
+  });
+
+  const final = `PREPARED BY: ${activeUser}\nACCOUNT NUMBER: ${accNum}\nREFERENCE: ${ref}\nISSUE START DATE: ${ranges.map(r => formatDate(r.s)).join(" / ")}\nISSUE END DATE: ${ranges.map(r => formatDate(new Date(r.r.getTime() - 86400000))).join(" / ")}\nRESTORATION DATE: ${ranges.map(r => formatDate(r.r)).join(" / ")}\nBILLING CYCLE: ${type}\nCRM: ${crm}\nPLAN: ${plan.toFixed(2)}\nTOTAL REQUESTED DAYS: ${totalDays}\n\nBREAKDOWN:\nPERIOD: ${[...new Set(periods)].join(", ")}\n${breakdown}\nESTIMATED REBATE AMOUNT: ${totalGrand.toFixed(2)}\nRFO: ${rfo}`;
+
+  document.getElementById("rbOutput").innerText = final;
+  
+  // Fixed: Sending curN (Full Name) instead of Username to the 2nd column of the Sheet
+  google.script.run.withSuccessHandler(() => {
+    loadHistoryStd();
+    if(typeof refreshChoiceHistory === 'function') refreshChoiceHistory();
+  }).recordCalculation(final, curN, curL, curSup);
+}
+
+// --- HISTORY LOGIC ---
+function loadHistoryStd() {
+  const container = document.getElementById("historyListStd");
+  
+  if (typeof curN === 'undefined' || typeof curL === 'undefined') {
+    setTimeout(loadHistoryStd, 300);
+    return;
+  }
+
+  container.innerHTML = "<p style='text-align:center; font-size:0.8em; opacity:0.6;'>Loading records...</p>";
+  
+  google.script.run.withSuccessHandler(history => {
+    if (!history || history.length === 0) {
+      container.innerHTML = "<p style='text-align:center; font-size:0.8em; color:#888;'>No records found.</p>";
+      return;
+    }
+    
+    let html = "";
+    history.forEach((item, index) => {
+      html += `
+        <div style="border: 1px solid rgba(0,0,0,0.1); margin-bottom: 6px; border-radius: 4px; background: #fff; overflow: hidden; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+          <div onclick="toggleHistoryStd(this)" style="cursor:pointer; background:#f8f9fa; padding:10px 12px; display:flex; justify-content:space-between; align-items:center; font-family:'Courier New', monospace; font-size: 11px;">
+            <span style="font-weight:bold; color:#333; flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; padding-right:10px;">
+              ${item.header}
+            </span>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span style="font-size:9px; color:#999; white-space:nowrap;">${item.date}</span>
+              <span style="font-size:9px; color:#28a745; font-weight:bold; border:1px solid #28a745; padding:0px 4px; border-radius:3px;">VIEW</span>
+            </div>
+          </div>
+          <div class="history-body-std" style="display:none; padding:10px; border-top:1px solid #eee;">
+            <pre style="font-size: 11px; white-space: pre-wrap; background:#fafafa; padding:8px; margin-bottom:8px; border:1px solid #eee;">${item.text}</pre>
+            <button onclick="copySpecificHistory(this)" style="width:100%; background:#28a745; color:white; border:none; padding:8px; border-radius:3px; cursor:pointer; font-size:10px; font-weight:bold;">COPY FULL RESULT</button>
+          </div>
+        </div>`;
+    });
+    container.innerHTML = html;
+  }).getUserHistory(curN, curL); 
+}
+
+function toggleHistoryStd(header) {
+  const body = header.nextElementSibling;
+  const statusSpan = header.querySelector('span:last-child');
+  const isHidden = body.style.display === "none";
+  body.style.display = isHidden ? "block" : "none";
+  statusSpan.innerText = isHidden ? "COLLAPSE" : "EXPAND";
+}
+
+function copySpecificHistory(btn) {
+  const text = btn.parentElement.previousElementSibling.innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    const original = btn.innerText;
+    btn.innerText = "COPIED!";
+    setTimeout(() => { btn.innerText = original; }, 1500);
+  });
+}
+
+function clearRebateForm() {
+  if(confirm("Clear all inputs?")) {
+    document.querySelectorAll("#rebatePage input").forEach(i => i.value = "");
+    document.getElementById("rbOutput").innerText = "";
+    const container = document.getElementById("rebateRows");
+    while (container.children.length > 1) container.removeChild(container.lastChild);
+  }
+}
+
+function copyRebate() { const t = document.getElementById("rbOutput").innerText; if(t) navigator.clipboard.writeText(t).then(()=>alert("Copied to clipboard.")); }
+
+// Auto-load history on initialization
+setTimeout(loadHistoryStd, 1000);
+</script>
